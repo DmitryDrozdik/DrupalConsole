@@ -14,6 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Parser;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Drupal\Console\Command\Command;
 use Drupal\Console\Style\DrupalStyle;
 
@@ -78,7 +79,8 @@ class TranslationStatsCommand extends Command
         if ($format == 'table') {
             $tableHeaders = [
                 $this->trans('commands.translation.stats.messages.language'),
-                $this->trans('commands.translation.stats.messages.percentage')
+                $this->trans('commands.translation.stats.messages.percentage'),
+                $this->trans('commands.translation.stats.messages.iso')
             ];
 
             $io->table($tableHeaders, $stats);
@@ -124,7 +126,7 @@ class TranslationStatsCommand extends Command
 
             foreach ($languages as $langCode => $languageName) {
                 $languageDir = $appRoot . 'config/translations/' . $langCode;
-                if (isset($language) and $langCode != $language) {
+                if (isset($language) && $langCode != $language) {
                     continue;
                 }
                 if (!isset($statistics[$langCode])) {
@@ -173,7 +175,8 @@ class TranslationStatsCommand extends Command
             $index = isset($languages[$langCode])? $languages[$langCode]: $langCode;
             $stats[] = [
                 'name' => $index,
-                'percentage' => round($statistic['diff']/$statistic['total']*100, 2)
+                'percentage' => round($statistic['diff']/$statistic['total']*100, 2),
+                'iso' => $langCode
             ];
         }
 
