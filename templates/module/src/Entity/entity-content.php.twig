@@ -46,6 +46,8 @@ use Drupal\user\UserInterface;
  *     },
  *   },
  *   base_table = "{{ entity_name }}",
+ *   data_table = "{{ entity_name }}_field_data",
+ *   translatable = TRUE,
  *   admin_permission = "administer {{ label|lower }} entities",
  *   entity_keys = {
  *     "id" = "id",
@@ -61,6 +63,7 @@ use Drupal\user\UserInterface;
  *   links = {
  *     "canonical" = "{{ base_path }}/{{ entity_name }}/{{ '{'~entity_name~'}' }}",
 {% if bundle_entity_type %}
+ *     "add-page" = "{{ base_path }}/{{ entity_name }}/add",
  *     "add-form" = "{{ base_path }}/{{ entity_name }}/add/{{ '{'~bundle_entity_type~'}' }}",
 {% else %}
  *     "add-form" = "{{ base_path }}/{{ entity_name }}/add",
@@ -191,7 +194,6 @@ class {{ entity_class }} extends ContentEntityBase implements {{ entity_class }}
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
-      ->setDefaultValueCallback('Drupal\node\Entity\Node::getCurrentUserId')
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', array(
         'label' => 'hidden',

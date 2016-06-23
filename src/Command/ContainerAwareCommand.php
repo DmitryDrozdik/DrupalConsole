@@ -254,6 +254,11 @@ abstract class ContainerAwareCommand extends Command
         return $this->getService('plugin.manager.views.display');
     }
 
+    public function getPluginTypeManager()
+    {
+        return $this->getService('plugin.plugin_type_manager');
+    }
+
     public function getWebprofilerForms()
     {
         $profiler = $this->getService('profiler');
@@ -402,6 +407,15 @@ abstract class ContainerAwareCommand extends Command
     }
 
     /**
+     * @param $id
+     * @return mixed
+     */
+    public function hasService($id)
+    {
+        return $this->getContainer()->has($id);
+    }
+
+    /**
      * @param $serviceId
      * @return mixed
      */
@@ -439,6 +453,15 @@ abstract class ContainerAwareCommand extends Command
         }
 
         return $this->getValidator()->validateServiceExist($service_name, $services);
+    }
+
+    public function validatePluginManagerServiceExist($service_name, $services = null)
+    {
+        if (!$services) {
+            $services = $this->getServices();
+        }
+
+        return $this->getValidator()->validatePluginManagerServiceExist($service_name, $services);
     }
 
     public function validateModule($machine_name)
@@ -481,6 +504,23 @@ abstract class ContainerAwareCommand extends Command
     public function validateSpaces($name)
     {
         return $this->getValidator()->validateSpaces($name);
+    }
+
+    public function validateModuleFunctionExist($module, $function, $moduleFile = null)
+    {
+        //Load module file to prevent issue of missing functions used in update
+        $modulePath = $this->getSite()->getModulePath($module, false);
+        if ($moduleFile) {
+            $this->getDrupalHelper()->loadLegacyFile($modulePath . '/'. $moduleFile);
+        } else {
+            $this->getDrupalHelper()->loadLegacyFile($modulePath . '/' . $module . '.module');
+        }
+
+        if (function_exists($function)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function removeSpaces($name)

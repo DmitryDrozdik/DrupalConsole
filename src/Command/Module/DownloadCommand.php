@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
-use Drupal\Console\Command\ProjectDownloadTrait;
+use Drupal\Console\Command\Shared\ProjectDownloadTrait;
 use Drupal\Console\Style\DrupalStyle;
 
 class DownloadCommand extends Command
@@ -119,6 +119,7 @@ class DownloadCommand extends Command
                             $versions
                         );
                     }
+
                 } else {
                     $versions = $this->getApplication()->getDrupalApi()
                         ->getPackagistModuleReleases($module, 10, $unstable);
@@ -141,7 +142,7 @@ class DownloadCommand extends Command
                     }
                 }
 
-                $this->setComposerRepositories();
+                $this->setComposerRepositories("default");
                 $command = sprintf(
                     'composer require drupal/%s:%s',
                     $module,
@@ -153,7 +154,7 @@ class DownloadCommand extends Command
                     $io->success(
                         sprintf(
                             $this->trans('commands.module.download.messages.composer'),
-                            $version
+                            $module
                         )
                     );
                 }
