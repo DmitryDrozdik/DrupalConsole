@@ -67,7 +67,7 @@ class ServiceCommand extends GeneratorCommand
                 null,
                 InputOption::VALUE_OPTIONAL,
                 $this->trans('commands.generate.service.options.path')
-            );      
+            );
     }
 
     /**
@@ -88,13 +88,23 @@ class ServiceCommand extends GeneratorCommand
         $interface = $input->getOption('interface');
         $services = $input->getOption('services');
         $path_service = $input->getOption('path_service');
+        
+        $available_services = $this->getServices();
 
-
+        if (in_array($name, array_values($available_services))) {
+            throw new \Exception(
+                sprintf(
+                    $this->trans('commands.generate.service.messages.service-already-taken'),
+                    $module
+                )
+            );
+        }
+        
         // @see Drupal\Console\Command\Shared\ServicesTrait::buildServices
         $build_services = $this->buildServices($services);
         $this
             ->getGenerator()
-            ->generate($module, $name,$class, $interface, $build_services,$path_service);
+            ->generate($module, $name, $class, $interface, $build_services, $path_service);
 
         $this->getChain()->addCommand('cache:rebuild', ['cache' => 'all']);
     }
@@ -160,7 +170,7 @@ class ServiceCommand extends GeneratorCommand
                 '/modules/custom/' . $module . '/src/'
             );
             $input->setOption('path_service', $path_service);
-        }       
+        }
     }
 
     protected function createGenerator()

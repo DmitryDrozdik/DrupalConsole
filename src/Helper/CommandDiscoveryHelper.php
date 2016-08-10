@@ -288,7 +288,6 @@ class CommandDiscoveryHelper extends Helper
 
         $dependencies = $this->commandDependencies->read($reflectionClass);
 
-
         if ($reflectionClass->getConstructor()->getNumberOfRequiredParameters() > 0) {
             if ($source != 'Console') {
                 if ($type === 'module') {
