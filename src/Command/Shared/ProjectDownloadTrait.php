@@ -23,7 +23,11 @@ trait ProjectDownloadTrait
     public function modulesQuestion(DrupalStyle $io)
     {
         $moduleList = [];
-        $modules = $this->getApplication()->getSite()->getModules(true, false, true, true, true, true);
+
+        $modules = $this->extensionManager->discoverModules()
+            ->showUninstalled()
+            ->showNoCore()
+            ->getList(true);
 
         while (true) {
             $moduleName = $io->choiceNoList(
@@ -50,7 +54,12 @@ trait ProjectDownloadTrait
     public function modulesUninstallQuestion(DrupalStyle $io)
     {
         $moduleList = [];
-        $modules = $this->getApplication()->getSite()->getModules(true, true, false, true, true, true);
+
+        $modules = $this->extensionManager->discoverModules()
+            ->showInstalled()
+            ->showNoCore()
+            ->showCore()
+            ->getList(true);
 
         while (true) {
             $moduleName = $io->choiceNoList(
@@ -167,7 +176,8 @@ trait ProjectDownloadTrait
         );
 
         try {
-            $destination = $this->getApplication()->getDrupalApi()->downloadProjectRelease(
+            $destination = $this->drupalApi->downloadProjectRelease(
+                $this->httpClient,
                 $project,
                 $version
             );
@@ -176,10 +186,9 @@ trait ProjectDownloadTrait
                 $path = $this->getExtractPath($type);
             }
 
-            $drupal = $this->get('site');
             $projectPath = sprintf(
                 '%s/%s',
-                $drupal->isValidInstance()?$drupal->getRoot():getcwd(),
+                $this->appRoot,
                 $path
             );
 
@@ -193,7 +202,7 @@ trait ProjectDownloadTrait
             $zippy = Zippy::load();
             if (PHP_OS === "WIN32" || PHP_OS === "WINNT") {
                 $container = AdapterContainer::load();
-                $container['Drupal\\Console\\Zippy\\Adapter\\TarGzGNUTarForWindowsAdapter'] = function($container) {
+                $container['Drupal\\Console\\Zippy\\Adapter\\TarGzGNUTarForWindowsAdapter'] = function ($container) {
                     return TarGzGNUTarForWindowsAdapter::newInstance(
                         $container['executable-finder'],
                         $container['resource-manager'],
@@ -205,8 +214,8 @@ trait ProjectDownloadTrait
             }
             $archive = $zippy->open($destination);
             if ($type == 'core') {
-                $archive->extract(getenv('MSYSTEM') ? NULL : $projectPath);
-            } else if (getenv('MSYSTEM')) {
+                $archive->extract(getenv('MSYSTEM') ? null : $projectPath);
+            } elseif (getenv('MSYSTEM')) {
                 $current_dir = getcwd();
                 $temp_dir = sys_get_temp_dir();
                 chdir($temp_dir);
@@ -259,7 +268,7 @@ trait ProjectDownloadTrait
             )
         );
 
-        $releases = $this->getApplication()->getDrupalApi()->getProjectReleases($project, $latest?1:15, $stable);
+        $releases = $this->drupalApi->getProjectReleases($this->httpClient, $project, $latest?1:15, $stable);
 
         if (!$releases) {
             $io->error(
